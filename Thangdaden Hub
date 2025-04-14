@@ -1,0 +1,975 @@
+-- T?i th� vi?n Kavo UI
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("Thangdaden Hub", "BloodTheme") -- �?i t�n th�nh Thangdaden Hub
+
+-- T�y ch?nh m�u s?c theo Itsuki Nakano (�? v� �en)
+local Colors = {
+    Background = Color3.fromRGB(255, 69, 0), -- �? cam (gi?ng t�c Itsuki)
+    Accent = Color3.fromRGB(0, 0, 0), -- �en (gi?ng n�)
+    Text = Color3.fromRGB(255, 255, 255) -- Tr?ng
+}
+Window.BackgroundColor3 = Colors.Background
+Window.AccentColor3 = Colors.Accent
+
+-- Khai b�o bi?n c� b?n
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- H�m ki?m tra m?c ti�u c?n s?ng
+local function isAlive(target)
+    local targetHumanoid = target:FindFirstChild("Humanoid")
+    return targetHumanoid and targetHumanoid.Health > 0
+end
+
+-- H�m d?ch chuy?n
+local function teleportTo(position)
+    humanoidRootPart.CFrame = CFrame.new(position)
+end
+
+-- H�m t?n c�ng m�?t m�
+local function smoothAttack(target)
+    if isAlive(target) then
+        teleportTo(target.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+        local tool = character:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
+        if tool then
+            tool.Parent = character
+            humanoid:EquipTool(tool)
+            game:GetService("VirtualUser"):CaptureController()
+            game:GetService("VirtualUser"):ClickButton1(Vector2.new())
+        end
+    end
+end
+
+-- H�m t?m Mirage Island v� Blue Gear (Auto Race V4)
+local function findMirageIsland()
+    local mirage = game.Workspace:FindFirstChild("MirageIsland")
+    if mirage then
+        local blueGear = mirage:FindFirstChild("BlueGear")
+        if blueGear then
+            teleportTo(blueGear.Position)
+            print("Found Blue Gear!")
+            return true
+        end
+    end
+    print("Mirage Island not found!")
+    return false
+end
+
+-- H�m Auto Race V4 (gi?ng Maru Hub)
+local function autoRaceV4()
+    if player.Data.Race.Value == "Human" or player.Data.Race.Value == "Shark" or player.Data.Race.Value == "Angel" or player.Data.Race.Value == "Rabbit" or player.Data.Race.Value == "Ghoul" or player.Data.Race.Value == "Cyborg" then
+        if findMirageIsland() then
+            local sealedKing = game.Workspace.NPCs:FindFirstChild("Sealed King")
+            if sealedKing then
+                teleportTo(sealedKing.HumanoidRootPart.Position)
+                wait(1)
+                fireclickdetector(sealedKing.ClickDetector)
+                print("Interacted with Sealed King")
+            end
+            local temple = game.Workspace:FindFirstChild("TempleOfTime")
+            if temple then
+                teleportTo(temple.Position)
+                print("Starting trial for Race V4...")
+                wait(5)
+                print("Trial completed!")
+            end
+        end
+    else
+        print("Race not eligible for V4!")
+    end
+end
+
+-- H�m ESP (t? Redz Hub)
+local function createESP(target)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 100, 0, 30)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Adornee = target
+    billboard.Parent = target
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = target.Name
+    textLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+    textLabel.TextScaled = true
+    textLabel.Parent = billboard
+end
+
+-- H�m Auto Quest (t? Redz Hub)
+local function autoQuest()
+    local questNPC = game.Workspace.NPCs:FindFirstChild("QuestGiver")
+    if questNPC then
+        teleportTo(questNPC.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(questNPC.ClickDetector)
+        print("Accepted quest!")
+        for _, enemy in pairs(game.Workspace.NPCs:GetChildren()) do
+            if isAlive(enemy) and enemy.Name:find("QuestEnemy") then
+                smoothAttack(enemy)
+                wait(0.5)
+            end
+        end
+    else
+        print("Quest NPC not found!")
+    end
+end
+
+-- H�m Fast Attack (t? Redz Hub)
+local function fastAttack()
+    local tool = character:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
+    if tool then
+        tool.Parent = character
+        humanoid:EquipTool(tool)
+        for i = 1, 5 do
+            game:GetService("VirtualUser"):ClickButton1(Vector2.new())
+            wait(0.1)
+        end
+    end
+end
+
+-- H�m Auto Stats (t? Redz Hub)
+local function autoStats(statType)
+    local args = {
+        [1] = "AddPoint",
+        [2] = statType,
+        [3] = 1
+    }
+    game:GetService("ReplicatedStorage").Remotes.Stats:FireServer(unpack(args))
+    print("Added 1 point to " .. statType)
+end
+
+-- H�m Auto Farm Mastery (tr�i �c qu? v� s�ng)
+local function autoFarmMastery(weaponType)
+    local closestEnemy = nil
+    local closestDistance = math.huge
+    local range = 20
+
+    for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+        if isAlive(npc) then
+            local distance = (npc.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+            if distance < closestDistance and distance <= range then
+                closestEnemy = npc
+                closestDistance = distance
+            end
+        end
+    end
+
+    if closestEnemy then
+        teleportTo(closestEnemy.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+        if weaponType == "DevilFruit" then
+            local devilFruit = player.Backpack:FindFirstChildOfClass("Tool")
+            if devilFruit and devilFruit:FindFirstChild("Fruit") then
+                devilFruit.Parent = character
+                humanoid:EquipTool(devilFruit)
+                game:GetService("VirtualUser"):SetKeyDown("0x5A") -- Ph�m Z
+                wait(0.1)
+                game:GetService("VirtualUser"):SetKeyUp("0x5A")
+            end
+        elseif weaponType == "Gun" then
+            local gun = player.Backpack:FindFirstChild("Gun")
+            if gun then
+                gun.Parent = character
+                humanoid:EquipTool(gun)
+                game:GetService("VirtualUser"):ClickButton1(Vector2.new())
+            end
+        end
+    end
+end
+
+-- H�m Auto Farm Bones (t? W-Aruze Hub)
+local function autoFarmBones()
+    for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+        if isAlive(npc) and (npc.Name == "Reborn Skeleton" or npc.Name == "Living Zombie" or npc.Name == "Demonic Soul") then
+            smoothAttack(npc)
+            wait(0.5)
+        end
+    end
+
+    local gravestone = game.Workspace:FindFirstChild("Gravestone")
+    if gravestone and game:GetService("Lighting").ClockTime >= 18 then
+        teleportTo(gravestone.Position)
+        wait(1)
+        fireclickdetector(gravestone:FindFirstChild("ClickDetector"))
+        print("Tried luck at Gravestone!")
+    end
+end
+
+-- H�m Auto Farm Katakuri (Dough King) (t? W-Aruze Hub)
+local function autoFarmKatakuri()
+    local hasSweetChalice = player.Backpack:FindFirstChild("Sweet Chalice") or character:FindFirstChild("Sweet Chalice")
+    if not hasSweetChalice then
+        local sweetCrafter = game.Workspace.NPCs:FindFirstChild("Sweet Crafter")
+        if sweetCrafter then
+            teleportTo(sweetCrafter.HumanoidRootPart.Position)
+            wait(1)
+            fireclickdetector(sweetCrafter.ClickDetector)
+            print("Crafted Sweet Chalice!")
+        end
+    end
+
+    local dripMama = game.Workspace.NPCs:FindFirstChild("drip_mama")
+    if dripMama then
+        teleportTo(dripMama.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(dripMama.ClickDetector)
+        print("Checking Cake Land enemies...")
+        for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+            if isAlive(npc) and npc.Parent.Name == "Cake Land" then
+                smoothAttack(npc)
+                wait(0.3)
+            end
+        end
+    end
+
+    local doughKing = game.Workspace:FindFirstChild("Dough King")
+    if doughKing and isAlive(doughKing) then
+        teleportTo(doughKing.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+        smoothAttack(doughKing)
+        print("Fighting Dough King!")
+    end
+end
+
+-- H�m Auto Farm Level (t? W-Aruze Hub)
+local function autoFarmLevel()
+    autoQuest()
+    local raidNPC = game.Workspace.NPCs:FindFirstChild("Raid NPC")
+    if raidNPC then
+        teleportTo(raidNPC.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(raidNPC.ClickDetector)
+        print("Joined Fruit Raid!")
+    end
+
+    for _, seaBeast in pairs(game.Workspace:GetChildren()) do
+        if seaBeast.Name == "Sea Beast" and isAlive(seaBeast) then
+            teleportTo(seaBeast.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+            smoothAttack(seaBeast)
+            wait(0.5)
+        end
+    end
+end
+
+-- H�m Auto Raid
+local function autoRaid(raidType)
+    local scientist = game.Workspace.NPCs:FindFirstChild("Mysterious Scientist")
+    if scientist then
+        teleportTo(scientist.HumanoidRootPart.Position)
+        wait(1)
+        if raidType == "Basic" then
+            local args = {
+                [1] = "Microchip",
+                [2] = "Basic"
+            }
+            game:GetService("ReplicatedStorage").Remotes.BuyItem:InvokeServer(unpack(args))
+            print("Bought Basic Raid Microchip!")
+        elseif raidType == "Advanced" then
+            local args = {
+                [1] = "Microchip",
+                [2] = "Advanced"
+            }
+            game:GetService("ReplicatedStorage").Remotes.BuyItem:InvokeServer(unpack(args))
+            print("Bought Advanced Raid Microchip!")
+        end
+    end
+
+    local raidArea = (game.PlaceId == 2753915549) and game.Workspace:FindFirstChild("Hot and Cold") or game.Workspace:FindFirstChild("Castle on the Sea")
+    if raidArea then
+        teleportTo(raidArea.Position)
+        wait(1)
+        for _, enemy in pairs(game.Workspace.NPCs:GetChildren()) do
+            if isAlive(enemy) then
+                smoothAttack(enemy)
+                wait(0.3)
+            end
+        end
+    end
+end
+
+-- H�m Auto Hunt Sea Events
+local function autoHuntSeaEvents()
+    local seaEvents = {"Sea Beast", "Rumbling Waters", "Terrorshark", "Piranha", "Ship Raid"}
+    for _, event in pairs(game.Workspace:GetChildren()) do
+        for _, eventName in pairs(seaEvents) do
+            if event.Name:find(eventName) and isAlive(event) then
+                teleportTo(event.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+                smoothAttack(event)
+                print("Hunting Sea Event: " .. eventName)
+                wait(0.5)
+            end
+        end
+    end
+end
+
+-- H�m Auto Island (Dragon Island, Mirage Island)
+local function autoIsland(islandType)
+    if islandType == "Dragon" then
+        local frozenWatcher = game.Workspace.NPCs:FindFirstChild("Frozen Watcher")
+        if frozenWatcher then
+            teleportTo(frozenWatcher.HumanoidRootPart.Position)
+            wait(1)
+            fireclickdetector(frozenWatcher.ClickDetector)
+            print("Summoned Leviathan in Frozen Dimension!")
+        end
+        local leviathan = game.Workspace:FindFirstChild("Leviathan")
+        if leviathan and isAlive(leviathan) then
+            teleportTo(leviathan.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+            smoothAttack(leviathan)
+            print("Fighting Leviathan!")
+        end
+    elseif islandType == "Mirage" then
+        if findMirageIsland() then
+            print("Hanging at Mirage Island!")
+            wait(60) -- Treo 1 ph�t
+        end
+    end
+end
+
+-- H�m Auto Sea 1, 2, 3
+local function autoTravelSea(seaNumber)
+    if seaNumber == 1 then
+        local starterNPC = game.Workspace.NPCs:FindFirstChild("Marine Starter")
+        if starterNPC then
+            teleportTo(starterNPC.HumanoidRootPart.Position)
+            wait(1)
+            fireclickdetector(starterNPC.ClickDetector)
+            print("Travelled to Sea 1!")
+        end
+    elseif seaNumber == 2 then
+        local cafeNPC = game.Workspace.NPCs:FindFirstChild("Cafe NPC")
+        if cafeNPC then
+            teleportTo(cafeNPC.HumanoidRootPart.Position)
+            wait(1)
+            fireclickdetector(cafeNPC.ClickDetector)
+            print("Travelled to Sea 2!")
+        end
+    elseif seaNumber == 3 then
+        local cafeNPC = game.Workspace.NPCs:FindFirstChild("Cafe NPC")
+        if cafeNPC then
+            teleportTo(cafeNPC.HumanoidRootPart.Position)
+            wait(1)
+            fireclickdetector(cafeNPC.ClickDetector)
+            print("Travelled to Sea 3!")
+        end
+    end
+end
+
+-- H�m Fix Lag (t? W-Aruze Hub)
+local function fixLag()
+    game:GetService("Lighting").GlobalShadows = false
+    game:GetService("Lighting").FogEnd = 9000000000
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+            v.Material = "Plastic"
+            v.Reflectance = 0
+        elseif v:IsA("Decal") then
+            v.Transparency = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Lifetime = 0
+        end
+    end
+    print("Lag fixed! FPS Boost enabled.")
+end
+
+-- H�m Bring Mob
+local function bringMob()
+    for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+        if isAlive(npc) and (npc.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude < 50 then
+            npc.HumanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.new(0, 0, -15)
+        end
+    end
+    print("Brought mobs to player!")
+end
+
+-- H�m Auto Buy All Items
+local function autoBuyItems()
+    local deathKing = game.Workspace.NPCs:FindFirstChild("Death King")
+    if deathKing then
+        teleportTo(deathKing.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(deathKing.ClickDetector)
+        local items = {"Random Surprise", "Race Reroll", "Stat Reset"}
+        for _, item in pairs(items) do
+            local args = {
+                [1] = "BuyItem",
+                [2] = item
+            }
+            game:GetService("ReplicatedStorage").Remotes.BuyItem:InvokeServer(unpack(args))
+            print("Bought " .. item .. " from Death King!")
+            wait(1)
+        end
+    end
+
+    local scientist = game.Workspace.NPCs:FindFirstChild("Mysterious Scientist")
+    if scientist then
+        teleportTo(scientist.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(scientist.ClickDetector)
+        local raidTypes = {"Basic", "Advanced"}
+        for _, raidType in pairs(raidTypes) do
+            local args = {
+                [1] = "Microchip",
+                [2] = raidType
+            }
+            game:GetService("ReplicatedStorage").Remotes.BuyItem:InvokeServer(unpack(args))
+            print("Bought " .. raidType .. " Microchip!")
+            wait(1)
+        end
+    end
+
+    local itemSeller = game.Workspace.NPCs:FindFirstChild("Item Seller")
+    if itemSeller then
+        teleportTo(itemSeller.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(itemSeller.ClickDetector)
+        local shopItems = {"Combat", "Katana", "Pistol"}
+        for _, item in pairs(shopItems) do
+            local args = {
+                [1] = "BuyItem",
+                [2] = item
+            }
+            game:GetService("ReplicatedStorage").Remotes.BuyItem:InvokeServer(unpack(args))
+            print("Bought " .. item .. " from Item Seller!")
+            wait(1)
+        end
+    end
+end
+
+-- H�m Auto Farm Bosses
+local function autoFarmBosses()
+    local ripIndra = game.Workspace:FindFirstChild("rip_indra")
+    if ripIndra and isAlive(ripIndra) then
+        local buttons = {"Button1", "Button2", "Button3"}
+        for _, buttonName in pairs(buttons) do
+            local button = game.Workspace:FindFirstChild(buttonName)
+            if button then
+                teleportTo(button.Position)
+                wait(1)
+                fireclickdetector(button.ClickDetector)
+            end
+        end
+        teleportTo(ripIndra.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+        smoothAttack(ripIndra)
+        print("Fighting Rip Indra!")
+    end
+
+    local dripMama = game.Workspace.NPCs:FindFirstChild("drip_mama")
+    if dripMama then
+        teleportTo(dripMama.HumanoidRootPart.Position)
+        wait(1)
+        fireclickdetector(dripMama.ClickDetector)
+        for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+            if isAlive(npc) and npc.Parent.Name == "Cake Land" then
+                smoothAttack(npc)
+                wait(0.3)
+            end
+        end
+        local cakePrince = game.Workspace:FindFirstChild("Cake Prince")
+        if cakePrince and isAlive(cakePrince) then
+            teleportTo(cakePrince.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+            smoothAttack(cakePrince)
+            print("Fighting Cake Prince!")
+        end
+    end
+
+    local hasHallowEssence = player.Backpack:FindFirstChild("Hallow Essence") or character:FindFirstChild("Hallow Essence")
+    if not hasHallowEssence then
+        local gravestone = game.Workspace:FindFirstChild("Gravestone")
+        if gravestone then
+            teleportTo(gravestone.Position)
+            wait(1)
+            fireclickdetector(gravestone.ClickDetector)
+            print("Obtained Hallow Essence!")
+        end
+    end
+    local soulReaper = game.Workspace:FindFirstChild("Soul Reaper")
+    if soulReaper and isAlive(soulReaper) then
+        teleportTo(soulReaper.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+        smoothAttack(soulReaper)
+        print("Fighting Soul Reaper!")
+    end
+
+    local longma = game.Workspace:FindFirstChild("Longma")
+    if longma and isAlive(longma) then
+        teleportTo(longma.HumanoidRootPart.Position + Vector3.new(0, 0, -5))
+        smoothAttack(longma)
+        print("Fighting Longma!")
+    end
+end
+
+-- Tab Main
+local MainTab = Window:NewTab("Main")
+local MainSection = MainTab:NewSection("Core Features")
+MainSection:NewLabel("Thangdaden Hub - Powered by Nakano!")
+
+-- Auto Farm
+local autoFarmEnabled = false
+MainSection:NewToggle("Auto Farm", "Farm NPC t? �?ng", function(state)
+    autoFarmEnabled = state
+    if state then
+        print("Auto Farm: ON")
+        spawn(function()
+            while autoFarmEnabled do
+                for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+                    if isAlive(npc) and autoFarmEnabled then
+                        smoothAttack(npc)
+                        wait(0.3)
+                    end
+                end
+                wait(0.1)
+            end
+        end)
+    else
+        print("Auto Farm: OFF")
+    end
+end)
+
+-- Walk Speed
+MainSection:NewSlider("Walk Speed", "T�ng t?c �? ch?y", 500, 16, function(value)
+    humanoid.WalkSpeed = value
+end)
+
+-- Tab Farm (t? W-Aruze Hub)
+local FarmTab = Window:NewTab("Farm")
+local FarmSection = FarmTab:NewSection("Auto Farm Features")
+FarmSection:NewLabel("Farm t? �?ng t? W-Aruze Hub!")
+
+-- Auto Farm Bones
+local autoFarmBonesEnabled = false
+FarmSection:NewToggle("Auto Farm Bones", "T? �?ng farm bones", function(state)
+    autoFarmBonesEnabled = state
+    if state then
+        print("Auto Farm Bones: ON")
+        spawn(function()
+            while autoFarmBonesEnabled do
+                autoFarmBones()
+                wait(1)
+            end
+        end)
+    else
+        print("Auto Farm Bones: OFF")
+    end
+end)
+
+-- Auto Farm Katakuri (Dough King)
+local autoFarmKatakuriEnabled = false
+FarmSection:NewToggle("Auto Farm Katakuri", "T? �?ng farm Dough King", function(state)
+    autoFarmKatakuriEnabled = state
+    if state then
+        print("Auto Farm Katakuri: ON")
+        spawn(function()
+            while autoFarmKatakuriEnabled do
+                autoFarmKatakuri()
+                wait(5)
+            end
+        end)
+    else
+        print("Auto Farm Katakuri: OFF")
+    end
+end)
+
+-- Auto Farm Level
+local autoFarmLevelEnabled = false
+FarmSection:NewToggle("Auto Farm Level", "T? �?ng farm level", function(state)
+    autoFarmLevelEnabled = state
+    if state then
+        print("Auto Farm Level: ON")
+        spawn(function()
+            while autoFarmLevelEnabled do
+                autoFarmLevel()
+                wait(5)
+            end
+        end)
+    else
+        print("Auto Farm Level: OFF")
+    end
+end)
+
+-- Auto Farm Bosses
+local autoFarmBossesEnabled = false
+FarmSection:NewToggle("Auto Farm Bosses", "T? �?ng ��nh boss", function(state)
+    autoFarmBossesEnabled = state
+    if state then
+        print("Auto Farm Bosses: ON")
+        spawn(function()
+            while autoFarmBossesEnabled do
+                autoFarmBosses()
+                wait(5)
+            end
+        end)
+    else
+        print("Auto Farm Bosses: OFF")
+    end
+end)
+
+-- Tab Sea Events
+local SeaTab = Window:NewTab("Sea Events")
+local SeaSection = SeaTab:NewSection("Sea Hunting")
+SeaSection:NewLabel("T? �?ng s�n Sea Events!")
+
+-- Auto Raid
+local autoRaidEnabled = false
+SeaSection:NewToggle("Auto Raid", "T? �?ng tham gia raid", function(state)
+    autoRaidEnabled = state
+    if state then
+        print("Auto Raid: ON")
+        spawn(function()
+            while autoRaidEnabled do
+                autoRaid("Basic")
+                wait(300)
+            end
+        end)
+    else
+        print("Auto Raid: OFF")
+    end
+end)
+
+-- Auto Hunt Sea Events
+local autoHuntSeaEnabled = false
+SeaSection:NewToggle("Auto Hunt Sea Events", "T? �?ng s�n t?t c? s? ki?n bi?n", function(state)
+    autoHuntSeaEnabled = state
+    if state then
+        print("Auto Hunt Sea Events: ON")
+        spawn(function()
+            while autoHuntSeaEnabled do
+                autoHuntSeaEvents()
+                wait(1)
+            end
+        end)
+    else
+        print("Auto Hunt Sea Events: OFF")
+    end
+end)
+
+-- Auto Island (Dragon Island)
+local autoDragonIslandEnabled = false
+SeaSection:NewToggle("Auto Dragon Island", "T? �?ng treo Dragon Island", function(state)
+    autoDragonIslandEnabled = state
+    if state then
+        print("Auto Dragon Island: ON")
+        spawn(function()
+            while autoDragonIslandEnabled do
+                autoIsland("Dragon")
+                wait(10)
+            end
+        end)
+    else
+        print("Auto Dragon Island: OFF")
+    end
+end)
+
+-- Auto Island (Mirage Island)
+local autoMirageIslandEnabled = false
+SeaSection:NewToggle("Auto Mirage Island", "T? �?ng treo Mirage Island", function(state)
+    autoMirageIslandEnabled = state
+    if state then
+        print("Auto Mirage Island: ON")
+        spawn(function()
+            while autoMirageIslandEnabled do
+                autoIsland("Mirage")
+                wait(10)
+            end
+        end)
+    else
+        print("Auto Mirage Island: OFF")
+    end
+end)
+
+-- Auto Travel Sea 1, 2, 3
+local autoTravelSeaEnabled = false
+SeaSection:NewToggle("Auto Travel Sea 1-2-3", "T? �?ng chuy?n gi?a Sea 1, 2, 3", function(state)
+    autoTravelSeaEnabled = state
+    if state then
+        print("Auto Travel Sea: ON")
+        spawn(function()
+            while autoTravelSeaEnabled do
+                autoTravelSea(1)
+                wait(300)
+                autoTravelSea(2)
+                wait(300)
+                autoTravelSea(3)
+                wait(300)
+            end
+        end)
+    else
+        print("Auto Travel Sea: OFF")
+    end
+end)
+
+-- Tab Mastery
+local MasteryTab = Window:NewTab("Mastery")
+local MasterySection = MasteryTab:NewSection("Farm Mastery")
+MasterySection:NewLabel("T? �?ng farm mastery!")
+
+-- Auto Farm Mastery (Devil Fruit)
+local autoMasteryFruitEnabled = false
+MasterySection:NewToggle("Auto Mastery (Devil Fruit)", "Farm mastery tr�i �c qu?", function(state)
+    autoMasteryFruitEnabled = state
+    if state then
+        print("Auto Mastery (Devil Fruit): ON")
+        spawn(function()
+            while autoMasteryFruitEnabled do
+                autoFarmMastery("DevilFruit")
+                wait(0.2)
+            end
+        end)
+    else
+        print("Auto Mastery (Devil Fruit): OFF")
+    end
+end)
+
+-- Auto Farm Mastery (Gun)
+local autoMasteryGunEnabled = false
+MasterySection:NewToggle("Auto Mastery (Gun)", "Farm mastery s�ng", function(state)
+    autoMasteryGunEnabled = state
+    if state then
+        print("Auto Mastery (Gun): ON")
+        spawn(function()
+            while autoMasteryGunEnabled do
+                autoFarmMastery("Gun")
+                wait(0.2)
+            end
+        end)
+    else
+        print("Auto Mastery (Gun): OFF")
+    end
+end)
+
+-- Tab Race V4
+local RaceTab = Window:NewTab("Race V4")
+local RaceSection = RaceTab:NewSection("Race Awakening")
+RaceSection:NewLabel("Auto Race V4 - Maru Style")
+
+-- Auto Race V4
+local autoV4Enabled = false
+RaceSection:NewToggle("Auto Race V4", "T? �?ng n�ng c?p t?c V4", function(state)
+    autoV4Enabled = state
+    if state then
+        print("Auto Race V4: ON")
+        spawn(function()
+            while autoV4Enabled do
+                autoRaceV4()
+                wait(10)
+            end
+        end)
+    else
+        print("Auto Race V4: OFF")
+    end
+end)
+
+-- Tab Teleport
+local TeleportTab = Window:NewTab("Teleport")
+local TeleportSection = TeleportTab:NewSection("Travel Fast")
+TeleportSection:NewLabel("Ch?n �?a �i?m �? d?ch chuy?n")
+
+local locations = {
+    ["Spawn Point"] = Vector3.new(0, 50, 0),
+    ["Marine Base"] = Vector3.new(1000, 50, 1000),
+    ["Pirate Village"] = Vector3.new(-1000, 50, -1000),
+    ["Sky Island"] = Vector3.new(0, 500, 0)
+}
+for name, pos in pairs(locations) do
+    TeleportSection:NewButton("Go to " .. name, "D?ch chuy?n �?n " .. name, function()
+        teleportTo(pos)
+        print("Teleported to " .. name)
+    end)
+end
+
+-- Tab Combat
+local CombatTab = Window:NewTab("Combat")
+local CombatSection = CombatTab:NewSection("Fight Like a Pro")
+CombatSection:NewLabel("T�ng s?c m?nh chi?n �?u")
+
+-- Kill Aura
+local killAuraEnabled = false
+CombatSection:NewToggle("Kill Aura", "T? �?ng ��nh g?n", function(state)
+    killAuraEnabled = state
+    if state then
+        print("Kill Aura: ON")
+        spawn(function()
+            while killAuraEnabled do
+                for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+                    if isAlive(npc) and (npc.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude < 15 then
+                        smoothAttack(npc)
+                    end
+                end
+                wait(0.2)
+            end
+        end)
+    else
+        print("Kill Aura: OFF")
+    end
+end)
+
+-- Fast Attack
+CombatSection:NewToggle("Fast Attack", "T?n c�ng nhanh", function(state)
+    if state then
+        print("Fast Attack: ON")
+        spawn(function()
+            while state do
+                fastAttack()
+                wait(0.5)
+            end
+        end)
+    else
+        print("Fast Attack: OFF")
+    end
+end)
+
+-- Tab Misc
+local MiscTab = Window:NewTab("Misc")
+local MiscSection = MiscTab:NewSection("Extra Features")
+MiscSection:NewLabel("T�nh n�ng b? sung")
+
+-- Auto Collect Chests
+local autoChestEnabled = false
+MiscSection:NewToggle("Auto Collect Chests", "T? �?ng l?y r��ng", function(state)
+    autoChestEnabled = state
+    if state then
+        print("Auto Collect Chests: ON")
+        spawn(function()
+            while autoChestEnabled do
+                for _, chest in pairs(game.Workspace:GetChildren()) do
+                    if chest.Name:find("Chest") and (chest.Position - humanoidRootPart.Position).Magnitude < 50 then
+                        teleportTo(chest.Position)
+                        wait(0.5)
+                    end
+                end
+                wait(1)
+            end
+        end)
+    else
+        print("Auto Collect Chests: OFF")
+    end
+end)
+
+-- Infinite Jump
+local infJumpEnabled = false
+MiscSection:NewToggle("Infinite Jump", "Nh?y v� h?n", function(state)
+    infJumpEnabled = state
+    if state then
+        print("Infinite Jump: ON")
+        game:GetService("UserInputService").JumpRequest:Connect(function()
+            if infJumpEnabled then
+                humanoid:ChangeState("Jumping")
+            end
+        end)
+    else
+        print("Infinite Jump: OFF")
+    end
+end)
+
+-- Auto Quest
+local autoQuestEnabled = false
+MiscSection:NewToggle("Auto Quest", "T? �?ng l�m nhi?m v?", function(state)
+    autoQuestEnabled = state
+    if state then
+        print("Auto Quest: ON")
+        spawn(function()
+            while autoQuestEnabled do
+                autoQuest()
+                wait(5)
+            end
+        end)
+    else
+        print("Auto Quest: OFF")
+    end
+end)
+
+-- ESP
+local espEnabled = false
+MiscSection:NewToggle("ESP", "Hi?n th? NPC v� ng�?i ch�i", function(state)
+    espEnabled = state
+    if state then
+        print("ESP: ON")
+        for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+            createESP(npc)
+        end
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character then
+                createESP(otherPlayer.Character)
+            end
+        end
+    else
+        print("ESP: OFF")
+        for _, obj in pairs(game.Workspace:GetDescendants()) do
+            if obj:IsA("BillboardGui") and obj.Name == "ESP" then
+                obj:Destroy()
+            end
+        end
+    end
+end)
+
+-- Bring Mob
+local bringMobEnabled = false
+MiscSection:NewToggle("Bring Mob", "K�o mobs v? g?n ng�?i ch�i", function(state)
+    bringMobEnabled = state
+    if state then
+        print("Bring Mob: ON")
+        spawn(function()
+            while bringMobEnabled do
+                bringMob()
+                wait(2)
+            end
+        end)
+    else
+        print("Bring Mob: OFF")
+    end
+end)
+
+-- Fix Lag
+MiscSection:NewButton("Fix Lag", "T�ng FPS, gi?m lag", function()
+    fixLag()
+end)
+
+-- Tab Shop
+local ShopTab = Window:NewTab("Shop")
+local ShopSection = ShopTab:NewSection("Auto Buy Items")
+ShopSection:NewLabel("T? �?ng mua v?t ph?m!")
+
+-- Auto Buy All Items
+local autoBuyItemsEnabled = false
+ShopSection:NewToggle("Auto Buy All Items", "T? �?ng mua t?t c? v?t ph?m", function(state)
+    autoBuyItemsEnabled = state
+    if state then
+        print("Auto Buy All Items: ON")
+        spawn(function()
+            while autoBuyItemsEnabled do
+                autoBuyItems()
+                wait(60)
+            end
+        end)
+    else
+        print("Auto Buy All Items: OFF")
+    end
+end)
+
+-- Tab Stats
+local StatsTab = Window:NewTab("Stats")
+local StatsSection = StatsTab:NewSection("Auto Stats")
+StatsSection:NewLabel("C?ng �i?m t? �?ng")
+
+-- Auto Stats
+local statTypes = {"Melee", "Defense", "Sword", "Gun", "Demon Fruit"}
+for _, stat in pairs(statTypes) do
+    StatsSection:NewToggle("Auto " .. stat, "T? �?ng c?ng �i?m " .. stat, function(state)
+        if state then
+            print("Auto " .. stat .. ": ON")
+            spawn(function()
+                while state do
+                    autoStats(stat)
+                    wait(1)
+                end
+            end)
+        else
+            print("Auto " .. stat .. ": OFF")
+        end
+    end)
+end
+
+-- Th�ng b�o kh?i �?ng
+print("Thangdaden Hub with All Features Loaded! Powered by Thang!")
